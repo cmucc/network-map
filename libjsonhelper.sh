@@ -2,7 +2,7 @@
 node_count=-1
 group=0
 
-generate_connections(){
+generate_connections_list(){
     local self_ip=$1
     local self_mac=${switch_internal_mac[$self_ip,self]}
     ((group++))
@@ -23,7 +23,7 @@ generate_connections(){
         child_switch_ip=${switch_mapping_port[$self_ip,$port,child]}
         parent_switch_ip=${switch_mapping_port[$self_ip,$port,parent]}
         if [ $child_switch_ip ]; then
-            generate_connections $child_switch_ip $switch_node_id "$port"
+            generate_connections_list $child_switch_ip $switch_node_id "$port"
         elif [ $parent_switch_ip ]; then
             :
         else
