@@ -1,37 +1,55 @@
 #!/bin/bash
 
 function arp_mac_to_dns() {
-	all_results=$(/usr/sbin/arp -a)
-	declare -A mac_to_dns;
-	OLDIFS=$IFS
+        all_results=$(/usr/sbin/arp -a)
+        declare -A mac_to_dns;
+        OLDIFS=$IFS
         IFS=$'\n'
         for item in $all_results; do
                 IFS=' '
-		read -r dns ip at mac eth on port <<< "$item"
-		if [[ "$dns" == "?" || $mac == "<incomplete>" ]]; then
-		continue;
-		fi
-		mac_to_dns["$mac"]="$dns"
+                read -r dns ip at mac eth on port <<< "$item"
+                if [[ "$dns" == "?" || $mac == "<incomplete>" ]]; then
+                continue;
+                fi
+                mac_to_dns["$mac"]="$dns"
         done
         IFS=OLDIFS
-	declare -p mac_to_dns
+        declare -p mac_to_dns
 }
 
 function arp_mac_to_ip() {
-	all_results=$(/usr/sbin/arp -a)
-	declare -A mac_to_ip;
-	OLDIFS=$IFS
+        all_results=$(/usr/sbin/arp -a)
+        declare -A mac_to_ip;
+        OLDIFS=$IFS
         IFS=$'\n'
         for item in $all_results; do
                 IFS=' '
-		read -r dns ip at mac eth on port <<< "$item"
-		if [[ $mac == "<incomplete>" ]]; then
-		continue;
-		fi
-		ip=${ip#*(}
-		ip=${ip%)*}
-		mac_to_ip["$mac"]="$ip"
+                read -r dns ip at mac eth on port <<< "$item"
+                if [[ $mac == "<incomplete>" ]]; then
+                continue;
+                fi
+                ip=${ip#*(}
+                ip=${ip%)*}
+                mac_to_ip["$mac"]="$ip"
         done
         IFS=OLDIFS
-	declare -p mac_to_ip
+        declare -p mac_to_ip
+}
+function arp_ip_to_mac() {
+        all_results=$(/usr/sbin/arp -a)
+        declare -A ip_to_mac;
+        OLDIFS=$IFS
+        IFS=$'\n'
+        for item in $all_results; do
+                IFS=' '
+                read -r dns ip at mac eth on port <<< "$item"
+                if [[ $mac == "<incomplete>" ]]; then
+                continue;
+                fi
+                ip=${ip#*(}
+                ip=${ip%)*}
+                ip_to_mac["$ip"]="$mac"
+        done
+        IFS=OLDIFS
+        declare -p ip_to_mac
 }
