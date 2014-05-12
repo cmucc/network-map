@@ -24,18 +24,51 @@ generate_connections_list(){
             local nodes=${switch_mapping_port[$self_ip,$port]}
             nodes=( $nodes )
             #find a way not to convert to array?
-            if [ ${#nodes[@]} == 1 ]; then
-                __output_node "$switch_group" "$switch_node_id" "$nodes" "$port:"
-            else
+            #if [ ${#nodes[@]} == 1 ]; then
+            #    __output_node "$switch_group" "$switch_node_id" "$nodes" "$port:"
+            #else
                 ((group++))
                 __output_node "$group" "$switch_node_id" "" "$port"
-                #((group++))
-                #__output_node "$switch_group" "$switch_node_id" "" "$port"
+                # ((group++))
+                # __output_node "$switch_group" "$switch_node_id" "" "$port"
                 portid=$node_count
+
+                declare -A dom0_info;
                 for leaf in "${nodes[@]}"; do
-                    __output_node "$group" "$portid" "$leaf" ""
+                    dns_name="${mac_to_dns["$leaf"],,}"
+                    if [ -n "$dns_name" ]; then
+                        dns_name="${dns_name%%.*}"
+                        if [ -n "${dom0_to_domU[$dns_name]}" ]; then
+                            if [ "${#dom0_info[@]}" -eq 0 ]; then
+                                saved_group=$group;
+                            fi
+                            ((group++))
+                            __output_node "$group" "$portid" "$leaf" ""
+                            dom0_info["$dns_name"]="$group $node_count"
+                        fi
+                    fi
                 done
-            fi
+                for leaf in "${nodes[@]}"; do
+                    long_dns_name="${mac_to_dns["$leaf"],,}"
+                    if [ "${#dom0_info[@]}" -gt 0 -a -n "$long_dns_name" ]; then
+                        dns_name="${long_dns_name%%.*}"
+                        if [ "${dom0_info[$dns_name]}" ]; then continue; fi
+                        dom0=( ${dom0_info[${domU_to_dom0[$dns_name]}]} );
+                        if [ "$dom0"  ]; then
+                            __output_node "${dom0[0]}" "${dom0[1]}" "$leaf" ""
+                            continue;
+                        fi
+                        dom0=( ${dom0_info[${domU_to_dom0[$long_dns_name]}]} );
+                        if [ "$dom0"  ]; then
+                            __output_node "${dom0[0]}" "${dom0[1]}" "$leaf" ""
+                            continue;
+                        fi
+                    fi
+                    __output_node "${saved_group:-$group}" "$portid" "$leaf" ""
+                done
+                saved_group=""
+                unset dom0_info
+            #fi
         fi
     done
 }
