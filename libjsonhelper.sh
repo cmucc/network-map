@@ -9,21 +9,15 @@ generate_connections_list(){
     local switch_group=$group
     if [ ! $3 ]; then
         __output_node "$switch_group" "$2" "$self_mac" "Switch"
-    else 
-        #this is a nasty hack to find the other end of the switch port and print it
-        for port in ${switch_internal_ports[$self_ip]}; do
-            if [ ${switch_mapping_port[$self_ip,$port,parent]} ]; then
-                __output_node "$switch_group" "$2" "$self_mac" "$3:Switch:$port" 2
-                break;
-            fi
-        done
+    else
+        __output_node "$switch_group" "$2" "$self_mac" "$3:Switch:${switch_mapping_mac[$4,$self_mac]:-?}"
     fi
     local switch_node_id=$node_count
     for port in ${switch_internal_ports[$self_ip]}; do
         child_switch_ip=${switch_mapping_port[$self_ip,$port,child]}
         parent_switch_ip=${switch_mapping_port[$self_ip,$port,parent]}
         if [ $child_switch_ip ]; then
-            generate_connections_list $child_switch_ip $switch_node_id "$port"
+            generate_connections_list $child_switch_ip $switch_node_id "$port" $self_ip
         elif [ $parent_switch_ip ]; then
             :
         else
