@@ -17,7 +17,7 @@ The script main file is network-mapper.sh and running it with no-args will query
 
 Once the JSON has been generated it will echo it out to either stdout or the file passed as the first args. 
 
-I have an older version hosted here http://www.club.cc.cmu.edu/~ssosothi/network.html
+I have a demoable older version hosted here http://www.club.cc.cmu.edu/~ssosothi/network.html
 
 
 Project Page (Club members only for now) https://wiki.club.cc.cmu.edu/org-auth/ccwiki/Network%20Map
